@@ -54,6 +54,7 @@ public class BacterialDetApp implements ActionListener{
 	private JScrollPane scrollHistoryTable,scrollList;
 	private Statement statement = null;
 	private ResultSet resultSet;
+	private PreparedStatement preparedStatment;
 	private int columnCount=0;
 	private Bacteria bacteria;
 	private ArrayList<Bacteria> listBacteriesToAdd = new ArrayList<Bacteria>();
@@ -300,6 +301,25 @@ public class BacterialDetApp implements ActionListener{
 	public void insertNewBacterie()
 	{
 		
+		try {
+			preparedStatment = (PreparedStatement) connectionManager.getConnection().prepareStatement(queryInsertToExamined);
+			for(int i=0; i< listBacteriesToAdd.size() ;i++)
+			{
+				preparedStatment.setString(1,listBacteriesToAdd.get(i).getGenotyp());
+				preparedStatment.setString(2,"class");
+				preparedStatment.executeUpdate();
+			}
+			connectionManager.getConnection().commit();
+			modelBacteriesList.clear();
+			listBacteriesToAdd.clear();
+		} catch (SQLException e) {
+			try {
+				connectionManager.getConnection().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
 	}
 	
 	public void updateTextFields()

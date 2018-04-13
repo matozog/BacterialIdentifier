@@ -37,6 +37,7 @@ public class ConnectionManager {
 	{
 		try {
 			connection = (Connection) DriverManager.getConnection(url, username,password);
+			connection.setAutoCommit(false);
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null,"Connection error!","Warning", JOptionPane.WARNING_MESSAGE);
 			e.printStackTrace();

@@ -10,7 +10,7 @@ import com.mysql.jdbc.Connection;
 public class ConnectionManager {
 
 	private String url = "jdbc:mysql://localhost:3306/bacterial", username,password;
-	private Connection connection = null;
+	private static Connection connection = null;
 	
 	public void setUsername(String username)
 	{
@@ -47,4 +47,10 @@ public class ConnectionManager {
 	{
 		return connection;
 	}
+	
+	public void closeConnection() throws SQLException
+	{
+		connection.close();
+	}
+	
 }

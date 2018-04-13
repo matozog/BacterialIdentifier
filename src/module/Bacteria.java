@@ -17,6 +17,43 @@ public class Bacteria {
 	@XmlElement(name = "Classification")
 	private String classification;
 	
+	public Bacteria()
+	{
+		
+	}
+	
+	public Bacteria(String genotype)
+	{
+		this.genotype = genotype;
+	}
+	
+	public String calculateAlpha(String genotype)
+	{
+		if(genotype.length() == 6)
+		{
+			return genotype.substring(0, 1) + genotype.substring(5,6);
+		}
+		else return "";
+	}
+	
+	public String calculateBeta(String genotype)
+	{
+		if(genotype.length() == 6)
+		{
+			return genotype.substring(1, 2) + genotype.substring(4,5);
+		}
+		else return "";
+	}
+	
+	public String calculateGamma(String genotype)
+	{
+		if(genotype.length() == 6)
+		{
+			return genotype.substring(2,4);
+		}
+		else return "";
+	}
+	
 	public String getGenotyp() {
 		return genotype;
 	}

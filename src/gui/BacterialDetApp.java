@@ -11,9 +11,11 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.awt.event.ActionEvent;
 import javax.swing.JLabel;
@@ -27,6 +29,13 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.PropertyException;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.soap.Text;
 
 import com.mysql.jdbc.PreparedStatement;
@@ -40,13 +49,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 
+@XmlRootElement(name = "Bacteries")
+@XmlSeeAlso(ArrayList.class)
 public class BacterialDetApp implements ActionListener{
 
 	private JFrame frame;
 	private ConnectionWindow connectionWindow;
 	private JTextField textFieldGenotype,textFieldClass,textFieldGamma,textFieldBeta,textFieldAplha;
 	private JTable tableHistory;
-	private JButton btnConnectToDatabase, btnSaveToDatabase, btnAddBacteria, btnSaveToxml, btnShowExaminedHistory,btnRemove;
+	private JButton btnConnectToDatabase, btnSaveToDatabase, btnAddBacteria, btnSaveToxml, btnShowExaminedHistory,btnRemove, btnExit;
 	private JPanel panelReasearchHistory,panelBacteries ;
 	private JList listBacteries;
 	private DefaultListModel modelBacteriesList;
@@ -58,6 +69,7 @@ public class BacterialDetApp implements ActionListener{
 	private int columnCount=0;
 	private Bacteria bacteria;
 	private ArrayList<Bacteria> listBacteriesToAdd = new ArrayList<Bacteria>();
+	private List<Bacteria> listExaminedBacteries = new ArrayList<Bacteria>();
 	private String queryInsertToFlagella = "INSERT INTO flagella (alpha,beta,number) VALUES (?,?,?);";
 	private String queryInsertToToughness = "INSERT INTO toughness (beta,gamma,rank) VALUES (?,?,?);";
 	private String queryInsertToExamined = "INSERT INTO examined (genotype,class) VALUES (?,?);";
@@ -75,7 +87,7 @@ public class BacterialDetApp implements ActionListener{
 	private void initialize() {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 583, 503);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(false);
 		frame.setTitle("Bacterial detector");
@@ -104,6 +116,11 @@ public class BacterialDetApp implements ActionListener{
 		 * 			JButtons
 		 */
 		
+		btnExit = new JButton("Exit");
+		btnExit.setBounds(188, 13, 82, 40);
+		btnExit.addActionListener(this);
+		frame.getContentPane().add(btnExit);
+		
 		btnRemove = new JButton("Remove");
 		btnRemove.setBounds(134, 173, 112, 31);
 		btnRemove.addActionListener(this);
@@ -121,7 +138,7 @@ public class BacterialDetApp implements ActionListener{
 		panelBacteries.add(btnAddBacteria);
 		
 		btnConnectToDatabase = new JButton("Connect to database");
-		btnConnectToDatabase.setBounds(12, 13, 258, 40);
+		btnConnectToDatabase.setBounds(12, 13, 169, 40);
 		btnConnectToDatabase.addActionListener(this);
 		frame.getContentPane().add(btnConnectToDatabase);
 		
@@ -280,38 +297,71 @@ public class BacterialDetApp implements ActionListener{
 		}
 		else if(z == btnSaveToxml)
 		{
-			
+			saveDataToXML();
 		}
 		else if(z == btnShowExaminedHistory)
 		{
 			showExaminedHistory();
+			btnSaveToxml.setEnabled(true);
 		}
 		else if(z == btnRemove)
 		{
 			if(modelBacteriesList.size()!=0 && listBacteries.getSelectedIndex()!=-1)
 			{
+				listBacteriesToAdd.remove(listBacteries.getSelectedIndex());
 				modelBacteriesList.removeElementAt(listBacteries.getSelectedIndex());
 			}
 			else JOptionPane.showMessageDialog(null,"Empty list or do not choose bacteria!", "Warning", JOptionPane.WARNING_MESSAGE);
 			if(modelBacteriesList.size()==0) btnSaveToDatabase.setEnabled(false);
 		}
+		else if (z == btnExit)
+		{
+			if(JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?", "Question", JOptionPane.YES_NO_OPTION) == 0)
+			{
+				try {
+					if(connectionManager.getConnection()!=null) connectionManager.closeConnection();
+					if(preparedStatment != null && !preparedStatment.isClosed()) preparedStatment.close();	
+					if(statement != null && !statement.isClosed()) statement.close();
+					System.exit(0);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+		}
 		
+	}
+	
+	public void saveDataToXML()
+	{
+		 try {
+		    	JAXBContext jaxbContext = JAXBContext.newInstance(BacterialDetApp.class);
+			    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+				jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+				jaxbMarshaller.marshal(this, new File("files/ExaminedHistory.xml"));
+			} catch (JAXBException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 	
 	public void insertNewBacterie()
 	{
-		
 		try {
 			preparedStatment = (PreparedStatement) connectionManager.getConnection().prepareStatement(queryInsertToExamined);
 			for(int i=0; i< listBacteriesToAdd.size() ;i++)
 			{
+				Bacteria bacteria = new Bacteria();
 				preparedStatment.setString(1,listBacteriesToAdd.get(i).getGenotyp());
 				preparedStatment.setString(2,"class");
+				bacteria.setGenotyp(listBacteriesToAdd.get(i).getGenotyp());
+				bacteria.setClassification("class");
+				listExaminedBacteries.add(bacteria);
 				preparedStatment.executeUpdate();
 			}
 			connectionManager.getConnection().commit();
 			modelBacteriesList.clear();
 			listBacteriesToAdd.clear();
+			saveDataToXML();
 		} catch (SQLException e) {
 			try {
 				connectionManager.getConnection().rollback();
@@ -347,20 +397,30 @@ public class BacterialDetApp implements ActionListener{
 			 	column.add(rsmd.getColumnName(i));
 			 	System.out.print(rsmd.getColumnName(i));
 			 }
+			 listExaminedBacteries.clear();
 			 while (resultSet.next())
 			 {
+				Bacteria bacteria = new Bacteria();
 			 	row = new Vector();
 			 	for(int i=1; i<=columnCount; i++)
 			 	{
 			 		row.add(resultSet.getString(i));	
 			 	}
-					data.add(row);
+				data.add(row);
+				bacteria.setGenotyp((String)row.get(0));
+				bacteria.setClassification((String)row.get(1));
+				listExaminedBacteries.add(bacteria);
 			}
 		} catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException | NullPointerException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "No connection to datebase!", "Warning", JOptionPane.WARNING_MESSAGE);
 		}
 		((DefaultTableModel) tableHistory.getModel()).setDataVector(data,column);
+	}
+	
+	@XmlElement (name = "Bacteria")
+	public List<Bacteria> getListExaminedBacteries() {
+		return listExaminedBacteries;
 	}
 	
 	/**

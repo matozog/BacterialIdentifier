@@ -1,5 +1,7 @@
 package module;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -9,8 +11,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType (XmlAccessType.FIELD)
 public class Bacteria {
 
-	private String alphaGene, betaGene, gammeGene, flagella, toughness;
-	
+	private String alphaGene, betaGene, gammeGene, flagella, toughness, number, rank;
+
 	@XmlElement(name = "Genotype")
 	private String genotype;
 	
@@ -27,11 +29,13 @@ public class Bacteria {
 		this.genotype = genotype;
 	}
 	
+
+	
 	public String calculateAlpha(String genotype)
 	{
 		if(genotype.length() == 6)
 		{
-			return genotype.substring(0, 1) + genotype.substring(5,6);
+			return this.alphaGene = genotype.substring(0, 1) + genotype.substring(5,6);
 		}
 		else return "";
 	}
@@ -40,7 +44,7 @@ public class Bacteria {
 	{
 		if(genotype.length() == 6)
 		{
-			return genotype.substring(1, 2) + genotype.substring(4,5);
+			return this.betaGene = genotype.substring(1, 2) + genotype.substring(4,5);
 		}
 		else return "";
 	}
@@ -49,7 +53,7 @@ public class Bacteria {
 	{
 		if(genotype.length() == 6)
 		{
-			return genotype.substring(2,4);
+			return this.gammeGene = genotype.substring(2,4);
 		}
 		else return "";
 	}
@@ -107,6 +111,25 @@ public class Bacteria {
 	}
 
 	public void setClassification(String classification) {
+		this.number = classification.substring(0, 1);
+		this.rank = classification.substring(1,2);
 		this.classification = classification;
+	}
+	
+	
+	public String getNumber() {
+		return number;
+	}
+
+	public void setNumber(String number) {
+		this.number = number;
+	}
+
+	public String getRank() {
+		return rank;
+	}
+
+	public void setRank(String rank) {
+		this.rank = rank;
 	}
 }

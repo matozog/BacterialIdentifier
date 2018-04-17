@@ -79,6 +79,10 @@ public class ConnectionWindow extends JFrame {
 		contentPane.add(btnConnect);
 	}
 	
+	//public boolean isConnected() {
+	//	return connected;
+	//}
+	
 	/**
 	 * Launch the application.
 	 */

@@ -12,7 +12,6 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +31,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.soap.Text;
 
 import com.mysql.jdbc.PreparedStatement;
 import com.mysql.jdbc.ResultSetMetaData;
@@ -44,6 +41,7 @@ import com.mysql.jdbc.Statement;
 
 import module.Bacteria;
 import module.ConnectionManager;
+import module.DatabaseManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -63,9 +61,7 @@ public class BacterialDetApp implements ActionListener{
 	private DefaultListModel modelBacteriesList;
 	private ConnectionManager connectionManager;
 	private JScrollPane scrollHistoryTable,scrollList;
-	private Statement statement = null;
-	private ResultSet resultSet;
-	private PreparedStatement preparedStatment;
+	private DatabaseManager databaseManager;
 	private int columnCount=0;
 	private Bacteria bacteria;
 	private ArrayList<Bacteria> listBacteriesToAdd = new ArrayList<Bacteria>();
@@ -95,6 +91,7 @@ public class BacterialDetApp implements ActionListener{
 		connectionWindow = new ConnectionWindow();
 		connectionManager = new ConnectionManager();
 		bacteria = new Bacteria();
+		databaseManager = new DatabaseManager();
 		
 		/*
 		 * 			JPanel
@@ -163,17 +160,23 @@ public class BacterialDetApp implements ActionListener{
 			
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				updateTextFields();	
+				if(textFieldGenotype.getText().length()==6)
+					updateTextFields();	
+				else clearTextFields();
 			}
 			
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				updateTextFields();
+				if(textFieldGenotype.getText().length()==6)
+					updateTextFields();
+				else clearTextFields();
 			}
 			
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				updateTextFields();
+				if(textFieldGenotype.getText().length()==6)
+					updateTextFields();
+				else clearTextFields();
 
 			}
 		});
@@ -282,7 +285,11 @@ public class BacterialDetApp implements ActionListener{
 			else
 			{
 				Bacteria bacteria = new Bacteria(textFieldGenotype.getText());
-				modelBacteriesList.addElement(bacteria.getGenotyp());
+				bacteria.setClassification(textFieldClass.getText());
+				bacteria.setAlphaGene(textFieldAplha.getText());
+				bacteria.setBetaGene(textFieldBeta.getText());
+				bacteria.setGammeGene(textFieldGamma.getText());
+				modelBacteriesList.addElement(bacteria.getGenotyp() +  " - " + bacteria.getClassification());
 				listBacteriesToAdd.add(bacteria);
 				btnSaveToDatabase.setEnabled(true);
 			}
@@ -318,17 +325,48 @@ public class BacterialDetApp implements ActionListener{
 		{
 			if(JOptionPane.showConfirmDialog(null, "Are you sure you want to exit?", "Question", JOptionPane.YES_NO_OPTION) == 0)
 			{
-				try {
-					if(connectionManager.getConnection()!=null) connectionManager.closeConnection();
-					if(preparedStatment != null && !preparedStatment.isClosed()) preparedStatment.close();	
-					if(statement != null && !statement.isClosed()) statement.close();
-					System.exit(0);
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
+				databaseManager.exitProgram();
+				System.exit(0);
 			}
 		}
-		
+	}
+	
+	public String calculateClassification(String genotype)
+	{
+		float length = Float.MAX_VALUE;
+		for(int i=0; i< databaseManager.getFlagellaTable().size();i++)
+		{
+			if(calcLength(bacteria.getAlphaGene(),bacteria.getBetaGene(),databaseManager.getFlagellaTable().get(i).getAlphaGene(),databaseManager.getFlagellaTable().get(i).getBetaGene())<length)
+			{
+				length = calcLength(bacteria.getAlphaGene(),bacteria.getBetaGene(),databaseManager.getFlagellaTable().get(i).getAlphaGene(),databaseManager.getFlagellaTable().get(i).getBetaGene());
+				bacteria.setNumber(databaseManager.getFlagellaTable().get(i).getNumber());
+			}
+		}
+		length = Float.MAX_VALUE;
+		for(int i=0; i<databaseManager.getToughnessTable().size();i++)
+		{
+			if(calcLength(bacteria.getBetaGene(),bacteria.getGammeGene(),databaseManager.getToughnessTable().get(i).getBetaGene(),databaseManager.getToughnessTable().get(i).getGammeGene())<length)
+			{
+				length = calcLength(bacteria.getBetaGene(),bacteria.getGammeGene(),databaseManager.getToughnessTable().get(i).getBetaGene(),databaseManager.getToughnessTable().get(i).getGammeGene());
+				
+				bacteria.setRank(databaseManager.getToughnessTable().get(i).getRank());
+			}
+		}
+		bacteria.setClassification(bacteria.getNumber() + bacteria.getRank());
+		return bacteria.getClassification();
+	}
+	
+	public float calcLength(String examined1, String examined2, String baseData1, String baseData2)
+	{
+		return (float) Math.sqrt((double)(Math.pow((Integer.parseInt(baseData1) - Integer.parseInt(examined1)),2) + Math.pow((Integer.parseInt(baseData2) - Integer.parseInt(examined2)),2)));
+	}
+	
+	public void clearTextFields()
+	{
+		textFieldAplha.setText("");
+		textFieldBeta.setText("");
+		textFieldGamma.setText("");
+		textFieldClass.setText("");
 	}
 	
 	public void saveDataToXML()
@@ -339,7 +377,6 @@ public class BacterialDetApp implements ActionListener{
 				jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 				jaxbMarshaller.marshal(this, new File("files/ExaminedHistory.xml"));
 			} catch (JAXBException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 	}
@@ -347,16 +384,13 @@ public class BacterialDetApp implements ActionListener{
 	public void insertNewBacterie()
 	{
 		try {
-			preparedStatment = (PreparedStatement) connectionManager.getConnection().prepareStatement(queryInsertToExamined);
+			databaseManager.setPreparedStatment((PreparedStatement) connectionManager.getConnection().prepareStatement(queryInsertToExamined));
 			for(int i=0; i< listBacteriesToAdd.size() ;i++)
 			{
-				Bacteria bacteria = new Bacteria();
-				preparedStatment.setString(1,listBacteriesToAdd.get(i).getGenotyp());
-				preparedStatment.setString(2,"class");
-				bacteria.setGenotyp(listBacteriesToAdd.get(i).getGenotyp());
-				bacteria.setClassification("class");
-				listExaminedBacteries.add(bacteria);
-				preparedStatment.executeUpdate();
+				databaseManager.getPreparedStatment().setString(1,listBacteriesToAdd.get(i).getGenotyp());
+				databaseManager.getPreparedStatment().setString(2,listBacteriesToAdd.get(i).getClassification());
+				listExaminedBacteries.add(listBacteriesToAdd.get(i));
+				databaseManager.getPreparedStatment().executeUpdate();
 			}
 			connectionManager.getConnection().commit();
 			modelBacteriesList.clear();
@@ -374,44 +408,45 @@ public class BacterialDetApp implements ActionListener{
 	
 	public void updateTextFields()
 	{
+			bacteria.setGenotyp(textFieldGenotype.getText());
 			textFieldAplha.setText(bacteria.calculateAlpha(textFieldGenotype.getText()));
 			textFieldBeta.setText(bacteria.calculateBeta(textFieldGenotype.getText()));
 			textFieldGamma.setText(bacteria.calculateGamma(textFieldGenotype.getText()));
+			textFieldClass.setText(calculateClassification(textFieldGenotype.getText()));
 	}
 	
 	public void showExaminedHistory() 
 	{
-		
+		databaseManager.readFlagellaTable();
+		databaseManager.readToughnessTable();
 	 	Vector data = new Vector();
 		Vector column = new Vector();
 	 	Vector row = null;
 		try {
-			Class.forName("com.mysql.jdbc.Driver").newInstance(); 
-			
-			 statement = (Statement) connectionManager.getConnection().createStatement();
-			 resultSet = statement.executeQuery("call showHistoryResearch();");
-			 ResultSetMetaData rsmd = (ResultSetMetaData) resultSet.getMetaData();
+
+			 databaseManager.setStatement((Statement) connectionManager.getConnection().createStatement());
+			 databaseManager.setResultSet(databaseManager.getStatement().executeQuery("call showHistoryResearch();"));
+			 ResultSetMetaData rsmd = (ResultSetMetaData) databaseManager.getResultSet().getMetaData();
 			 columnCount = rsmd.getColumnCount();
 			 for(int i=1; i<=columnCount; i++)
 			 {
 			 	column.add(rsmd.getColumnName(i));
-			 	System.out.print(rsmd.getColumnName(i));
 			 }
 			 listExaminedBacteries.clear();
-			 while (resultSet.next())
+			 while (databaseManager.getResultSet().next())
 			 {
 				Bacteria bacteria = new Bacteria();
 			 	row = new Vector();
 			 	for(int i=1; i<=columnCount; i++)
 			 	{
-			 		row.add(resultSet.getString(i));	
+			 		row.add(databaseManager.getResultSet().getString(i));	
 			 	}
 				data.add(row);
 				bacteria.setGenotyp((String)row.get(0));
 				bacteria.setClassification((String)row.get(1));
 				listExaminedBacteries.add(bacteria);
 			}
-		} catch (SQLException | InstantiationException | IllegalAccessException | ClassNotFoundException | NullPointerException e) {
+		} catch (SQLException | NullPointerException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "No connection to datebase!", "Warning", JOptionPane.WARNING_MESSAGE);
 		}

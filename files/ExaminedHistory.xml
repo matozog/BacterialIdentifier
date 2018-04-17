@@ -1,63 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Bacteries>
     <Bacteria>
+        <number>1</number>
+        <rank>d</rank>
         <Genotype>328734</Genotype>
         <Classification>1d</Classification>
     </Bacteria>
     <Bacteria>
+        <number>3</number>
+        <rank>c</rank>
         <Genotype>653313</Genotype>
         <Classification>3c</Classification>
     </Bacteria>
     <Bacteria>
+        <number>1</number>
+        <rank>c</rank>
         <Genotype>239322</Genotype>
         <Classification>1c</Classification>
     </Bacteria>
     <Bacteria>
+        <number>2</number>
+        <rank>a</rank>
         <Genotype>853211</Genotype>
         <Classification>2a</Classification>
     </Bacteria>
     <Bacteria>
-        <Genotype>123213</Genotype>
-        <Classification>class</Classification>
+        <number>3</number>
+        <rank>b</rank>
+        <Genotype>324567</Genotype>
+        <Classification>3b</Classification>
     </Bacteria>
     <Bacteria>
-        <Genotype>456453</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>124143</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>123342</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
+        <alphaGene>16</alphaGene>
+        <betaGene>25</betaGene>
+        <gammeGene>34</gammeGene>
+        <number>3</number>
+        <rank>b</rank>
         <Genotype>123456</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>098776</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>564738</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>958498</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>123443</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>987654</Genotype>
-        <Classification>class</Classification>
-    </Bacteria>
-    <Bacteria>
-        <Genotype>435456</Genotype>
-        <Classification>class</Classification>
+        <Classification>3b</Classification>
     </Bacteria>
 </Bacteries>

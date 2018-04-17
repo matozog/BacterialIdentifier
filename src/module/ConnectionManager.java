@@ -6,11 +6,16 @@ import java.sql.SQLException;
 import javax.swing.JOptionPane;
 
 import com.mysql.jdbc.Connection;
+import com.mysql.jdbc.DatabaseMetaDataUsingInfoSchema;
 
 public class ConnectionManager {
 
 	private String url = "jdbc:mysql://localhost:3306/bacterial", username,password;
 	private static Connection connection = null;
+	
+	public ConnectionManager()
+	{
+	}
 	
 	public void setUsername(String username)
 	{
@@ -33,15 +38,17 @@ public class ConnectionManager {
 		return url;
 	}
 	
-	public void createConnection() 
+	public boolean createConnection() 
 	{
 		try {
 			connection = (Connection) DriverManager.getConnection(url, username,password);
 			connection.setAutoCommit(false);
+			return true;
 		} catch (SQLException e) {
 			JOptionPane.showMessageDialog(null,"Connection error!","Warning", JOptionPane.WARNING_MESSAGE);
 			e.printStackTrace();
 		}
+		return false;
 	}
 	
 	public Connection getConnection()

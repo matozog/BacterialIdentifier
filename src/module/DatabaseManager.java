@@ -17,6 +17,7 @@ public class DatabaseManager {
 	private ConnectionManager connectionManager;
 	private static ArrayList<Bacteria> flagellaTable = new ArrayList<Bacteria>();
 	private static ArrayList<Bacteria> toughnessTable = new ArrayList<Bacteria>();
+	private String queryInsertToExamined = "INSERT INTO examined (genotype,class) VALUES (?,?);";
 	
 	public DatabaseManager()
 	{
@@ -27,6 +28,60 @@ public class DatabaseManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
+	}
+	
+	public boolean insertNewBacterie(ArrayList<Bacteria> listBacteriesToAdd)
+	{
+		try {
+			preparedStatment = (PreparedStatement) connectionManager.getConnection().prepareStatement(queryInsertToExamined);
+			for(int i=0; i< listBacteriesToAdd.size() ;i++)
+			{
+				preparedStatment.setString(1,listBacteriesToAdd.get(i).getGenotyp());
+				preparedStatment.setString(2,listBacteriesToAdd.get(i).getClassification());
+				preparedStatment.executeUpdate();
+			}
+			connectionManager.getConnection().commit();
+			listBacteriesToAdd.clear();
+			return true;
+		} catch (SQLException e) {
+			try {
+				connectionManager.getConnection().rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public String calculateClassification(Bacteria bacteria)
+	{
+		float length = Float.MAX_VALUE;
+		for(int i=0; i< flagellaTable.size();i++)
+		{
+			if(calcLength(bacteria.getAlphaGene(),bacteria.getBetaGene(),flagellaTable.get(i).getAlphaGene(),flagellaTable.get(i).getBetaGene())<length)
+			{
+				length = calcLength(bacteria.getAlphaGene(),bacteria.getBetaGene(),flagellaTable.get(i).getAlphaGene(),flagellaTable.get(i).getBetaGene());
+				bacteria.setNumber(flagellaTable.get(i).getNumber());
+			}
+		}
+		length = Float.MAX_VALUE;
+		for(int i=0; i<toughnessTable.size();i++)
+		{
+			if(calcLength(bacteria.getBetaGene(),bacteria.getGammeGene(),toughnessTable.get(i).getBetaGene(),toughnessTable.get(i).getGammeGene())<length)
+			{
+				length = calcLength(bacteria.getBetaGene(),bacteria.getGammeGene(),toughnessTable.get(i).getBetaGene(),toughnessTable.get(i).getGammeGene());
+				
+				bacteria.setRank(toughnessTable.get(i).getRank());
+			}
+		}
+		bacteria.setClassification(bacteria.getNumber() + bacteria.getRank());
+		return bacteria.getClassification();
+	}
+	
+	public float calcLength(String examined1, String examined2, String baseData1, String baseData2)
+	{
+		return (float) Math.sqrt((double)(Math.pow((Integer.parseInt(baseData1) - Integer.parseInt(examined1)),2) + Math.pow((Integer.parseInt(baseData2) - Integer.parseInt(examined2)),2)));
 	}
 	
 	public void readFlagellaTable()

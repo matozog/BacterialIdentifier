@@ -1,7 +1,5 @@
 package module;
 
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -28,8 +26,6 @@ public class Bacteria {
 	{
 		this.genotype = genotype;
 	}
-	
-
 	
 	public String calculateAlpha(String genotype)
 	{

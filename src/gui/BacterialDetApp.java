@@ -66,9 +66,6 @@ public class BacterialDetApp implements ActionListener{
 	private Bacteria bacteria;
 	private ArrayList<Bacteria> listBacteriesToAdd = new ArrayList<Bacteria>();
 	private List<Bacteria> listExaminedBacteries = new ArrayList<Bacteria>();
-	private String queryInsertToFlagella = "INSERT INTO flagella (alpha,beta,number) VALUES (?,?,?);";
-	private String queryInsertToToughness = "INSERT INTO toughness (beta,gamma,rank) VALUES (?,?,?);";
-	private String queryInsertToExamined = "INSERT INTO examined (genotype,class) VALUES (?,?);";
 
 	/**
 	 * Create the application.
@@ -300,7 +297,13 @@ public class BacterialDetApp implements ActionListener{
 		}
 		else if(z == btnSaveToDatabase)
 		{
-			insertNewBacterie();
+			if(databaseManager.insertNewBacterie(listBacteriesToAdd))
+			{
+				saveDataToXML();
+				modelBacteriesList.clear();
+				listExaminedBacteries.addAll(listBacteriesToAdd);
+				btnSaveToDatabase.setEnabled(false);
+			}
 		}
 		else if(z == btnSaveToxml)
 		{
@@ -331,36 +334,6 @@ public class BacterialDetApp implements ActionListener{
 		}
 	}
 	
-	public String calculateClassification(String genotype)
-	{
-		float length = Float.MAX_VALUE;
-		for(int i=0; i< databaseManager.getFlagellaTable().size();i++)
-		{
-			if(calcLength(bacteria.getAlphaGene(),bacteria.getBetaGene(),databaseManager.getFlagellaTable().get(i).getAlphaGene(),databaseManager.getFlagellaTable().get(i).getBetaGene())<length)
-			{
-				length = calcLength(bacteria.getAlphaGene(),bacteria.getBetaGene(),databaseManager.getFlagellaTable().get(i).getAlphaGene(),databaseManager.getFlagellaTable().get(i).getBetaGene());
-				bacteria.setNumber(databaseManager.getFlagellaTable().get(i).getNumber());
-			}
-		}
-		length = Float.MAX_VALUE;
-		for(int i=0; i<databaseManager.getToughnessTable().size();i++)
-		{
-			if(calcLength(bacteria.getBetaGene(),bacteria.getGammeGene(),databaseManager.getToughnessTable().get(i).getBetaGene(),databaseManager.getToughnessTable().get(i).getGammeGene())<length)
-			{
-				length = calcLength(bacteria.getBetaGene(),bacteria.getGammeGene(),databaseManager.getToughnessTable().get(i).getBetaGene(),databaseManager.getToughnessTable().get(i).getGammeGene());
-				
-				bacteria.setRank(databaseManager.getToughnessTable().get(i).getRank());
-			}
-		}
-		bacteria.setClassification(bacteria.getNumber() + bacteria.getRank());
-		return bacteria.getClassification();
-	}
-	
-	public float calcLength(String examined1, String examined2, String baseData1, String baseData2)
-	{
-		return (float) Math.sqrt((double)(Math.pow((Integer.parseInt(baseData1) - Integer.parseInt(examined1)),2) + Math.pow((Integer.parseInt(baseData2) - Integer.parseInt(examined2)),2)));
-	}
-	
 	public void clearTextFields()
 	{
 		textFieldAplha.setText("");
@@ -381,38 +354,13 @@ public class BacterialDetApp implements ActionListener{
 			}
 	}
 	
-	public void insertNewBacterie()
-	{
-		try {
-			databaseManager.setPreparedStatment((PreparedStatement) connectionManager.getConnection().prepareStatement(queryInsertToExamined));
-			for(int i=0; i< listBacteriesToAdd.size() ;i++)
-			{
-				databaseManager.getPreparedStatment().setString(1,listBacteriesToAdd.get(i).getGenotyp());
-				databaseManager.getPreparedStatment().setString(2,listBacteriesToAdd.get(i).getClassification());
-				listExaminedBacteries.add(listBacteriesToAdd.get(i));
-				databaseManager.getPreparedStatment().executeUpdate();
-			}
-			connectionManager.getConnection().commit();
-			modelBacteriesList.clear();
-			listBacteriesToAdd.clear();
-			saveDataToXML();
-		} catch (SQLException e) {
-			try {
-				connectionManager.getConnection().rollback();
-			} catch (SQLException e1) {
-				e1.printStackTrace();
-			}
-			e.printStackTrace();
-		}
-	}
-	
 	public void updateTextFields()
 	{
 			bacteria.setGenotyp(textFieldGenotype.getText());
 			textFieldAplha.setText(bacteria.calculateAlpha(textFieldGenotype.getText()));
 			textFieldBeta.setText(bacteria.calculateBeta(textFieldGenotype.getText()));
 			textFieldGamma.setText(bacteria.calculateGamma(textFieldGenotype.getText()));
-			textFieldClass.setText(calculateClassification(textFieldGenotype.getText()));
+			textFieldClass.setText(databaseManager.calculateClassification(bacteria));
 	}
 	
 	public void showExaminedHistory() 

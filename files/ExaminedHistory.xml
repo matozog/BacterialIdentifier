@@ -31,12 +31,51 @@
         <Classification>3b</Classification>
     </Bacteria>
     <Bacteria>
-        <alphaGene>16</alphaGene>
-        <betaGene>25</betaGene>
-        <gammeGene>34</gammeGene>
         <number>3</number>
         <rank>b</rank>
         <Genotype>123456</Genotype>
         <Classification>3b</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>1</number>
+        <rank>b</rank>
+        <Genotype>123456</Genotype>
+        <Classification>1b</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>1</number>
+        <rank>a</rank>
+        <Genotype>000000</Genotype>
+        <Classification>1a</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>3</number>
+        <rank>a</rank>
+        <Genotype>222222</Genotype>
+        <Classification>3a</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>3</number>
+        <rank>b</rank>
+        <Genotype>333333</Genotype>
+        <Classification>3b</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>2</number>
+        <rank>a</rank>
+        <Genotype>444444</Genotype>
+        <Classification>2a</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>4</number>
+        <rank>a</rank>
+        <Genotype>666666</Genotype>
+        <Classification>4a</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>1</number>
+        <rank>b</rank>
+        <Genotype>122323</Genotype>
+        <Classification>1b</Classification>
     </Bacteria>
 </Bacteries>

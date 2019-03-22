@@ -78,4 +78,40 @@
         <Genotype>122323</Genotype>
         <Classification>1b</Classification>
     </Bacteria>
+    <Bacteria>
+        <number>1</number>
+        <rank>b</rank>
+        <Genotype>123234</Genotype>
+        <Classification>1b</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>3</number>
+        <rank>b</rank>
+        <Genotype>432432</Genotype>
+        <Classification>3b</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>4</number>
+        <rank>d</rank>
+        <Genotype>345739</Genotype>
+        <Classification>4d</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>3</number>
+        <rank>b</rank>
+        <Genotype>234238</Genotype>
+        <Classification>3b</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>2</number>
+        <rank>a</rank>
+        <Genotype>234898</Genotype>
+        <Classification>2a</Classification>
+    </Bacteria>
+    <Bacteria>
+        <number>4</number>
+        <rank>a</rank>
+        <Genotype>643423</Genotype>
+        <Classification>4a</Classification>
+    </Bacteria>
 </Bacteries>
